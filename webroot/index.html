@@ -8,8 +8,27 @@
 
 
 <button id="add_iframe">Add new iframe</button>
+<button id="doRequestButton">Do request</button>
 <script>
     let appIndex = 1;
+
+    var apps = [];
+    document.getElementById("doRequestButton").addEventListener("click",function(){
+        apps.map((appName)=>doRequest(appName));
+    });
+
+    let addIframe = function(){
+        let appName = "app"+appIndex + "_" + Math.floor(Math.random()*100000000)+"~";
+        let newIframe = document.createElement("iframe");
+        newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
+        newIframe.src="/"+appName+"/appIndex.html?"+appName;
+        document.body.appendChild(newIframe);
+        doLog("Iframe " + appName + " added!");
+        //doRequest(appName);
+        apps.push(appName);
+        appIndex++;
+    };
+    document.getElementById("add_iframe").addEventListener("click",addIframe);
 
     function doLog(str){
         console.log(str);
@@ -33,20 +52,10 @@
                             }
 
                         })
-            }, 1000);
+            }, 10);
     }
 
-    let addIframe = function(){
-        let appName = "app"+appIndex + "_" + Math.floor(Math.random()*100000000)+"~";
-        let newIframe = document.createElement("iframe");
-        //newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
-        newIframe.src="/"+appName+"/appIndex.html?"+appName;
-        document.body.appendChild(newIframe);
-        doLog("Iframe " + appName + " added!");
-        doRequest(appName);
-        appIndex++;
-    };
-    document.getElementById("add_iframe").addEventListener("click",addIframe);
+
 
  /*   window.addEventListener('load', () => {
         navigator.serviceWorker.register('root-sw.js')
