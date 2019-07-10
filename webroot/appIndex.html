@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<span id="version"></span>
+<script>
+    let iframeCodeVersion = "iframeCode-v1";
+    let search = window.location.search;
+    let appName = search.substring(1);
+    document.getElementById("version").innerText = iframeCodeVersion + " : " + appName;
+    console.log("Version control:", iframeCodeVersion)
+
+    var registrationScopes = [];
+    function listScopes(){
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            registrationScopes = registrations.map(function (registration) {
+                return registration.scope;
+            });
+            console.log("Scopurile instalate:", registrationScopes);
+        });
+    }
+
+
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js' , {scope: "" + appName + "/"} )
+            .then(function (registration) {
+                    console.log(iframeCodeVersion, ': registration with scope: ', registration.scope);
+                    if (registrationScopes.indexOf(registration.scope) == -1) {
+                        //window.location.reload();
+                    }
+                    listScopes();
+                },
+                function (err) { // registration failed :(
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+    });
+
+
+    function doLog(str){
+        console.log(str);
+        let node = document.createTextNode(str+"    ")
+        document.getElementById("log").appendChild(node);
+    }
+
+
+    function doRequest(appname){
+        //console.log(str, document.getElementById("log"));
+        setTimeout(function(){
+            doLog("Requesting " + appname + "!")
+            fetch(appname +'/something').then(
+                function(response) {
+                    if(response.status == 200){
+                        response.text().then(function(text){
+                            doLog(appname + " response with " + text)
+                        })
+                    } else {
+                        doLog(appname + " not found!!!!!!" )
+                    }
+
+                })
+        }, 1000);
+    }
+
+
+    doRequest(appName);
+
+</script>
+<div id="log"></div>
+</body>
+</html>

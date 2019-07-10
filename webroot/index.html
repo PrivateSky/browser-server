@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<button id="add_iframe">Add new iframe</button>
+<script>
+    let appIndex = 1;
+
+    function doLog(str){
+        console.log(str);
+        let node = document.createTextNode(str+"    ")
+        document.getElementById("log").appendChild(node);
+    }
+
+
+    function doRequest(appname){
+        //console.log(str, document.getElementById("log"));
+        setTimeout(function(){
+                doLog("Requesting " + appname + "!")
+                fetch(appname +'/something').then(
+                        function(response) {
+                            if(response.status == 200){
+                                response.text().then(function(text){
+                                    doLog(appname + " response with " + text)
+                                })
+                            } else {
+                                doLog(appname + " not found!!!!!!" )
+                            }
+
+                        })
+            }, 1000);
+    }
+
+    let addIframe = function(){
+        let appName = "app"+appIndex + "__" + Math.floor(Math.random()*100000000);
+        let newIframe = document.createElement("iframe");
+        newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
+        newIframe.src="/appIndex.html?"+appName;
+        document.body.appendChild(newIframe);
+        doLog("Iframe " + appName + " added!");
+        doRequest(appName);
+        appIndex++;
+    };
+    document.getElementById("add_iframe").addEventListener("click",addIframe);
+
+ /*   window.addEventListener('load', () => {
+        navigator.serviceWorker.register('root-sw.js')
+            .then((registration) => {
+                    console.log(registration);
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+                },
+                function (err) { // registration failed :(
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+
+    });*/
+
+</script>
+    <div id="log"></div>
+</body>
+</html>
