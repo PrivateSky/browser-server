@@ -1,4 +1,4 @@
-let version ="ChildSw-v3";
+let version ="child";
 
 
 console.log(version, ": Creating service worker");
@@ -14,6 +14,10 @@ self.addEventListener('activate', function (event) {
 
 self.addEventListener('fetch', function (event) {
     console.log(version,": requesting", event.request.url);
+
+    if(version == "child"){
+        version = event.request.url;
+    }
 
     event.respondWith(new Promise((resolve) => {
         var status = {"status": 200, "statusText": "Success"};
