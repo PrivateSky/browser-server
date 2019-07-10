@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
 </head>
 <body>
-<span id="version"></span>
+<div id="log"></div><button id="doRequestButton">Do request</button>
+
 <script>
-    let iframeCodeVersion = "iframeCode-v1";
+    let iframeCodeVersion = "iframeCode-v4";
     let search = window.location.search;
     let appName = search.substring(1);
-    document.getElementById("version").innerText = iframeCodeVersion + " : " + appName;
+    //document.getElementById("version").innerText = iframeCodeVersion + " : " + appName;
     console.log("Version control:", iframeCodeVersion)
 
     var registrationScopes = [];
@@ -23,9 +23,12 @@
         });
     }
 
-
+    var folderName = "/" + appName + "/"
+    //var swPath = "http://localhost:8080" + folderName+'sw.js';
+    var swPath = "http://localhost:8080" + '/sw.js';
     window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js' , {scope: "" + appName + "/"} )
+        console.log("Registering SW for", swPath, folderName);
+        navigator.serviceWorker.register(swPath, {scope: folderName} )
             .then(function (registration) {
                     console.log(iframeCodeVersion, ': registration with scope: ', registration.scope);
                     if (registrationScopes.indexOf(registration.scope) == -1) {
@@ -47,27 +50,30 @@
 
 
     function doRequest(appname){
-        //console.log(str, document.getElementById("log"));
         setTimeout(function(){
-            doLog("Requesting " + appname + "!")
-            fetch(appname +'/something').then(
+            doLog("Delayed request for " + "/something in ",appname)
+            fetch('/something/'+appname).then(
                 function(response) {
                     if(response.status == 200){
                         response.text().then(function(text){
-                            doLog(appname + " response with " + text)
+                            doLog(appname + " response is " + text)
                         })
                     } else {
                         doLog(appname + " not found!!!!!!" )
                     }
 
+                }).catch(function(err){
+                    console.log(err);
                 })
-        }, 1000);
+        }, 100);
     }
 
 
-    doRequest(appName);
+    document.getElementById("doRequestButton").addEventListener("click",function(){
+        doRequest(appName);
+    });
 
 </script>
-<div id="log"></div>
+
 </body>
 </html>

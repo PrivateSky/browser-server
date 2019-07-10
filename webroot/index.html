@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Version 0.2</title>
 </head>
 <body>
 
@@ -37,10 +37,10 @@
     }
 
     let addIframe = function(){
-        let appName = "app"+appIndex + "__" + Math.floor(Math.random()*100000000);
+        let appName = "app"+appIndex + "_" + Math.floor(Math.random()*100000000)+"~";
         let newIframe = document.createElement("iframe");
-        newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
-        newIframe.src="/appIndex.html?"+appName;
+        //newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
+        newIframe.src="/"+appName+"/appIndex.html?"+appName;
         document.body.appendChild(newIframe);
         doLog("Iframe " + appName + " added!");
         doRequest(appName);
@@ -60,6 +60,14 @@
                 });
 
     });*/
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw-root.js', {scope: "/"}).then(function(reg) {
+            console.log('Yay, service worker is live!', reg);
+        }).catch(function(err) {
+            console.log('No oats for you.', err);
+        });
+    }
 
 </script>
     <div id="log"></div>
