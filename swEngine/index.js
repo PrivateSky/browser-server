@@ -17,25 +17,46 @@ server.use("/pin", "PUT", function (event, next) {
 });
 
 server.use(function (event, next) {
+    console.log("first use ")
+    next();
 });
 server.use("/csb", function (event, next) {
 });
 server.get("/rafa", function (event, next) {
 });
 
+
+server.use("/api/*", function (event, next) {
+   console.log("Check authentication");
+    next();
+});
+
+
+
 server.post("/api/rafa/ale", function (event, next) {
     console.log("static path1");
     next();
 });
 
-server.post("/api/radfa/ale", function (event, next) {
+server.post("/api/rafa/*", function (event, next) {
     console.log("static path2");
     next();
 });
 
+server.post("/api/*/ale", function (event, next) {
+    console.log("static path3");
+    next();
+});
+
+
+server.use(function (event, next) {
+   console.log("bay");
+   next();
+});
 
 server.post("/api/:apiName/:apiPath", function (event, next) {
     console.log("dynamic path");
+    next();
 });
 
 
@@ -47,7 +68,13 @@ server.post("/api/:apiName/:apiPath", function (event, next) {
 
 //console.log(server.listAllHandlers());
 
-server.fakeRequest("/api/rasfa/ale", "POST");
+server.executeRequest({
+    request:{
+        url:"http://localhost/api/rafa/ale",
+        pathname:"/api/rafa/ale",
+        method:"POST"
+    }
+});
 
 
 

@@ -2,11 +2,12 @@
 
 function Middleware() {
     let acceptedMethods = ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"];
-    let handlers = {}; // an object of handlers
+    let registeredHandlers = []; // an object of handlers
     //it is important to have the order of handlers from registry to ensure that a event is checked and pass
     //to each handler in the correct order
 
 
+    /*TODO* document function*/
     function unifyArguments(params) {
         let args = ["*", "*", undefined];
         switch (params.length) {
@@ -22,7 +23,7 @@ function Middleware() {
                 if (typeof params[0] !== "string" || typeof params[1] !== "function") {
                     throw new Error('If two arguments are provided the first one must be a string (url) and the second a function');
                 }
-                if(params[0][0] !== "/"){
+                if (params[0][0] !== "/") {
                     throw new Error("First argument doesn't look like a path");
                 }
                 args[0] = params[0];
@@ -33,7 +34,7 @@ function Middleware() {
                 if (typeof params[0] !== 'string' || typeof params[1] !== 'string' || typeof params[2] !== 'function') {
                     throw new Error('If three or more arguments are provided the first one must be a path (url), the second one should be a HTTP verb and the third a function');
                 }
-                if(params[0][0] !== "/"){
+                if (params[0][0] !== "/") {
                     throw new Error("First argument doesn't look like a path");
                 }
 
@@ -46,12 +47,20 @@ function Middleware() {
         }
         return args;
     }
-/*
-TODO: document all functions!!!!
-* */
-    function findPathCandidates(requestPath, method) {
+
+    /*
+    TODO: document all functions!!!!
+    * */
+    function findPathCandidates(requestPath, requestMethod) {
 
         let candidates = [];
+
+        function checkMethod(method) {
+            if (method === "*") {
+                return true;
+            }
+            return method === requestMethod
+        }
 
         function checkMatch(pathParts, requestParts) {
 
@@ -59,95 +68,92 @@ TODO: document all functions!!!!
                 params: {},
                 match: true
             };
+            if (pathParts.length === 1 && pathParts[0] === "*") {
+                return result;
+            }
 
             for (let i = 0; i < pathParts.length; i++) {
                 if (pathParts[i].startsWith(":")) {
                     result.params[pathParts[i].substring(1)] = requestParts[i];
+                    continue;
                 }
-                else {
-                    result.match = pathParts[i] === requestParts[i]
+                if (pathParts[i] === "*") {
+                    continue;
                 }
+
+                if (pathParts[i] !== requestParts[i]) {
+                    result.match = false;
+                    break;
+                }
+
             }
             return result;
         }
 
-        let requestParts = requestPath.split("/");
+        function extractPathParts(path) {
+            let pathParts = path.split("/");
 
-        if (requestParts.length > 1) {
-            requestParts.shift();
+            if (pathParts.length > 1) {
+                if (pathParts[0] === "") {
+                    pathParts.shift();
+                }
+            }
+            return pathParts;
         }
 
-        console.log(handlers);
+        let requestPathParts = extractPathParts(requestPath);
 
-        Object.keys(handlers).forEach((path) => {
+        for (let i = 0; i < registeredHandlers.length; i++) {
+            let registeredHandler = registeredHandlers[i];
+            let handlerPathParts = extractPathParts(registeredHandler.path);
 
-            let pathParts = path.split("/");
-            /*if (pathParts.length > 1) {
-                pathParts.shift();
-                if (pathParts.length === requestParts.length) {
-                    let result = checkMatch(pathParts, requestParts);
-                    if (result.match) {
-                        let allowedMethods = Object.keys(handlers[path]);
-                        if (allowedMethods.includes("*") || allowedMethods.includes(method))
-                            handlers[path][method].forEach(handler=>{
-                                candidates.push(handler);
-                            })
-
-                    }
-                }
-            }*/
-            for(let i = 0; i<pathParts.length; i++){
-                let part = pathParts[i];
-                if(part === ""){
-                    continue;
-                }
-
-                if(part[0] === ":"){
-                    // it is a var
-
-                    //... continue;
-                }
-
-
+            if (!checkMethod(registeredHandler.method)) {
+                continue;
             }
-        });
+
+            let matchResult = checkMatch(handlerPathParts, requestPathParts);
+            if (matchResult.match) {
+                candidates.push(registeredHandler.handler);
+            }
+        }
 
         return candidates;
-
     }
 
     /*
-    used for testing
+    event handler execution
      */
-    this.fakeRequest = function (path, method) {
-        let handlers = findPathCandidates(path, method);
+    this.executeRequest = function (event) {
 
+        let path = event.request.pathname;
+        let method = event.request.method;
+        let handlers = findPathCandidates(path, method);
         let index = 0;
 
-        let event = {event:"Some custom event"};
-
-
-        function executeNextHandler(event, index){
-            handlers[index](event, ()=>executeNextHandler(event, ++index))
+        function executeNextHandler(event, index) {
+            let nextHandler = handlers[index];
+            if (typeof nextHandler === "function") {
+                nextHandler(event, () => executeNextHandler(event, ++index));
+            }
+            else {
+                /**
+                 * TODO is this necessary?
+                 */
+                console.error("No more handlers triggered by next ");
+            }
         }
 
         executeNextHandler(event, index);
-
-
     };
 
     this.use = function (...params) {
-        console.log(params);
         let args = unifyArguments(params);
 
-        if (!handlers[args[0]]) {
-            handlers[args[0]] = {};
-        }
-
-        if (!handlers[args[0]][args[1]]) {
-            handlers[args[0]][args[1]] = [];
-        }
-        handlers[args[0]][args[1]].push(args[2])
+        registeredHandlers.push({
+            path: args[0],
+            method: args[1],
+            handler: args[2]
+        });
 
     };
 
@@ -163,7 +169,7 @@ TODO: document all functions!!!!
 
 
     this.listAllHandlers = function () {
-        return handlers;
+        return registeredHandlers;
     };
 
     /*
