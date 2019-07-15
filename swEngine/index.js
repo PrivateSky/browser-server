@@ -27,7 +27,7 @@ server.get("/rafa", function (event, next) {
 
 
 server.use("/api/*", function (event, next) {
-   console.log("Check authentication");
+    console.log("Check authentication");
     next();
 });
 
@@ -50,8 +50,8 @@ server.post("/api/*/ale", function (event, next) {
 
 
 server.use(function (event, next) {
-   console.log("bay");
-   next();
+    console.log("bay");
+    next();
 });
 
 server.post("/api/:apiName/:apiPath", function (event, next) {
@@ -60,21 +60,9 @@ server.post("/api/:apiName/:apiPath", function (event, next) {
 });
 
 
-
-
-/*self.addEventListener('fetch', function (event) {
-     server.handleEvent(event);
-});*/
-
-//console.log(server.listAllHandlers());
-
 server.executeRequest({
     request:{
-        url:"http://localhost/api/rafa/ale",
-        pathname:"/api/rafa/ale",
+        url:"http://localhost/api/rafa/ale?something=raf",
         method:"POST"
     }
 });
-
-
-

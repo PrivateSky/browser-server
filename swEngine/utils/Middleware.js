@@ -2,12 +2,21 @@
 
 function Middleware() {
     let acceptedMethods = ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"];
+    /*
+    It's important to have the order of handlers from registry to ensure that a event is checked and pass
+    to each handler in the correct order
+     */
     let registeredHandlers = []; // an object of handlers
-    //it is important to have the order of handlers from registry to ensure that a event is checked and pass
-    //to each handler in the correct order
 
 
-    /*TODO* document function*/
+    /**
+     * This function role is to properly extract the triplet ([path], [method], handler) from a given array.
+     * When the array has only 2 elements (*string, *function), then, the triplet is considered as being ([path], "*", handler)
+     * When a single array element is provided and its type is a function, then the triplet is considered as being ["*","*", handler], where
+     * "*" means that path or method can be anything that is valid.
+     * @param {Array} params
+     * @returns {*[]}
+     */
     function unifyArguments(params) {
         let args = ["*", "*", undefined];
         switch (params.length) {
@@ -48,9 +57,12 @@ function Middleware() {
         return args;
     }
 
-    /*
-    TODO: document all functions!!!!
-    * */
+    /**
+     * This function responsibility is to find all registered handlers that can match the request (both, path and method)
+     * @param requestPath
+     * @param requestMethod
+     * @returns {Array}
+     */
     function findPathCandidates(requestPath, requestMethod) {
 
         let candidates = [];
@@ -62,26 +74,36 @@ function Middleware() {
             return method === requestMethod
         }
 
-        function checkMatch(pathParts, requestParts) {
+        /**
+         * This function is receiving two arrays of path parts (e.g. a request path to "/api/node/dev" is
+         * ["api","node","dev"] and a requestParts could be ["api",":type","*"]) and is returning an object
+         * that is keeping the extracted params and a boolean that is indicating that those two arrays match.
+         * Each handler's part is compared with the request part from the same position only if it is not declared
+         * as a parameter or it is not "*".
+         * @param handlerParts
+         * @param requestParts
+         * @returns {{params: {}, match: boolean}}
+         */
+        function checkMatch(handlerParts, requestParts) {
 
             let result = {
                 params: {},
                 match: true
             };
-            if (pathParts.length === 1 && pathParts[0] === "*") {
+            if (handlerParts.length === 1 && handlerParts[0] === "*") {
                 return result;
             }
 
-            for (let i = 0; i < pathParts.length; i++) {
-                if (pathParts[i].startsWith(":")) {
-                    result.params[pathParts[i].substring(1)] = requestParts[i];
+            for (let i = 0; i < handlerParts.length; i++) {
+                if (handlerParts[i].startsWith(":")) {
+                    result.params[handlerParts[i].substring(1)] = requestParts[i];
                     continue;
                 }
-                if (pathParts[i] === "*") {
+                if (handlerParts[i] === "*") {
                     continue;
                 }
 
-                if (pathParts[i] !== requestParts[i]) {
+                if (handlerParts[i] !== requestParts[i]) {
                     result.match = false;
                     break;
                 }
@@ -113,39 +135,75 @@ function Middleware() {
 
             let matchResult = checkMatch(handlerPathParts, requestPathParts);
             if (matchResult.match) {
-                candidates.push(registeredHandler.handler);
+                candidates.push({params: matchResult.params, handler: registeredHandler.handler});
             }
         }
 
         return candidates;
     }
 
-    /*
-    event handler execution
+    /** execute request
+     * TODO investigate and discuss if is easy to adapt a node http response object to a WEB API response
+     * @param event
      */
     this.executeRequest = function (event) {
 
-        let path = event.request.pathname;
+        let url = new URL(event.request.url);
         let method = event.request.method;
-        let handlers = findPathCandidates(path, method);
+        let path = url.pathname;
+
+        /**
+         * Extract query params from url
+         * @type {URLSearchParams}
+         */
+        let searchParams = url.searchParams;
+        let queryParams = {};
+
+        for (let pair of searchParams.entries()) {
+            queryParams[pair[0]] = pair[1];
+        }
+        //add query parameters to event
+        event.queryParams = queryParams;
+
+        let requestHandlers = findPathCandidates(path, method);
         let index = 0;
 
         function executeNextHandler(event, index) {
-            let nextHandler = handlers[index];
-            if (typeof nextHandler === "function") {
-                nextHandler(event, () => executeNextHandler(event, ++index));
+
+            if (requestHandlers[index]) {
+
+                if (requestHandlers[index].params) {
+                    //TODO should I gather params from all matching handlers?
+                    event.params = requestHandlers[index].params;
+                }
+
+                let nextHandler = requestHandlers[index].handler;
+                if (typeof  nextHandler === "function")
+                    nextHandler(event, () => executeNextHandler(event, ++index));
             }
             else {
                 /**
                  * TODO is this necessary?
                  */
-                console.error("No more handlers triggered by next ");
+                //console.error("No more handlers triggered by next ");
             }
         }
 
-        executeNextHandler(event, index);
+        if (requestHandlers.length > 0) {
+            executeNextHandler(event, index);
+        }
+
     };
 
+    /**
+     * Registering handlers
+     *
+     *  use(handler);
+     *  use(path, handler);
+     *  use(path, method, handler);
+     *
+     * @param params
+     */
     this.use = function (...params) {
         let args = unifyArguments(params);
 
@@ -157,41 +215,14 @@ function Middleware() {
 
     };
 
-    this.handleEvent = function (event) {
-
-        let url = new URL(event.request.url);
-        let pathname = url.pathname;
-        let searchParams = {};
-        url.searchParams.forEach((key, value) => searchParams[key] = value);
-
-
-    };
-
-
+    /**
+     * TODO delete this - was used for dev purposes
+     * * @returns {Array}
+     */
     this.listAllHandlers = function () {
         return registeredHandlers;
     };
 
-    /*
-    *  use(handler);
-    *  use(path, handler);
-    *  use(path, method, handler);
-    *
-    * */
-
-    /**
-     * path poate sa arate asa /:csbid/vmq/:channelId
-     * cand se face match pe un path trebuiesc extrase variabilele din path
-     */
-
-    /*
-    * method can be: get, post, put, delete, options etc
-    * */
-
-    /*
-    *  handler should be a function(event, next){...}
-    *  next is a callback that tells the middleware to continue with matching other handlers...
-    * */
 
     this.get = function (path, handler) {
         this.use(path, "GET", handler)
@@ -199,6 +230,14 @@ function Middleware() {
 
     this.post = function (path, handler) {
         this.use(path, "POST", handler)
+    };
+
+    this.put = function (path, handler) {
+        this.use(path, "PUT", handler)
+    };
+
+    this.delete = function (path, handler) {
+        this.use(path, "DELETE", handler)
     };
 
     //wrapper over use method in order to ensure that use defined api will have the path match /:csbid/API/....
