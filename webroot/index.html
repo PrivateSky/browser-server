@@ -11,8 +11,16 @@
 <button id="doRequestButton">Do request in childs</button>
 <script>
     let appIndex = 1;
+    let hub;
+    //import {createHub} from 'HubAndSpoke/HubAndSpoke.js'
+    import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
+        hub = module.createHub(function(child, message){
+            console.log("Received message from ", child, message);
+        });
+    });
 
-    var apps = [];
+
+    let apps = [];
     document.getElementById("doRequestButton").addEventListener("click",function(){
         apps.map((appName)=>doRequest(appName));
     });
@@ -23,12 +31,9 @@
         newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
         newIframe.src="/"+appName+"/appIndex.html?"+appName;
         document.body.appendChild(newIframe);
-        var channel = new MessageChannel();
-        apps.push({
-            appname:appName,
-            port:channel.port1
-        });
-        newIframe.contentWindow.postMessage('init', '*', [channel.port2]);
+        apps.push(appName);
+
+        hub.addSpoke(appName,newIframe.contentWindow, newIframe.src);
         appIndex++;
     };
     document.getElementById("add_iframe").addEventListener("click",addIframe);
@@ -40,9 +45,10 @@
     }
 
 
-    function doRequest(appname){
+    function doRequest(appName){
         //console.log(str, document.getElementById("log"));
-        setTimeout(function(){
+        hub.sendMessage(appName, {messageFromPrent:"hello"});
+        /*setTimeout(function(){
                 doLog("Requesting " + appname + "!")
                 fetch(appname +'/something').then(
                         function(response) {
@@ -55,11 +61,9 @@
                             }
 
                         })
-            }, 10);
+            }, 1);
+         */
     }
-
-
-
  /*   window.addEventListener('load', () => {
         navigator.serviceWorker.register('root-sw.js')
             .then((registration) => {

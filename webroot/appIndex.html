@@ -51,7 +51,7 @@
 
     function doRequest(appname){
         setTimeout(function(){
-            doLog("Delayed request for " + "/something in ",appname)
+            doLog("Requesting " + "/something in " + appname);
             fetch('/something/'+appname).then(
                 function(response) {
                     if(response.status == 200){
@@ -65,13 +65,30 @@
                 }).catch(function(err){
                     console.log(err);
                 })
-        }, 100);
+        }, 1);
     }
 
 
     document.getElementById("doRequestButton").addEventListener("click",function(){
         doRequest(appName);
     });
+
+    window.addEventListener("message", function(event){
+        console.log("Message received in child iframe:", event);
+    }, false);
+
+
+    let spoke;
+    import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
+        console.log("...");
+        spoke = module.createSpoke(window, function(message){
+            console.log(appName,"Message from parent ", message, spoke);
+            spoke.send({messageFrom:appName});
+        })
+    }).catch(function(err){
+        console.log(err);
+    });
+
 
 </script>
 
