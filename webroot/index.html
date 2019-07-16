@@ -15,7 +15,7 @@
     //import {createHub} from 'HubAndSpoke/HubAndSpoke.js'
     import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
         hub = module.createHub(function(child, message){
-            console.log("Received message from ", child, message);
+            console.log("Received message in hub from ", child, message);
         });
     });
 

@@ -73,17 +73,17 @@
         doRequest(appName);
     });
 
+    /*
     window.addEventListener("message", function(event){
         console.log("Message received in child iframe:", event);
-    }, false);
+    }, false); */
 
-
+ 
     let spoke;
     import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
-        console.log("...");
-        spoke = module.createSpoke(window, function(message){
+        spoke = module.createSpoke(function(message){
             console.log(appName,"Message from parent ", message, spoke);
-            spoke.send({messageFrom:appName});
+            spoke.sendMessage({messageFrom:appName});
         })
     }).catch(function(err){
         console.log(err);
@@ -92,5 +92,4 @@
 
 </script>
 
-</body>
-</html>
+</bo
