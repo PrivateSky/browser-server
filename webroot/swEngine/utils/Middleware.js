@@ -147,7 +147,6 @@ function Middleware() {
      * @param event
      */
     this.executeRequest = function (event) {
-
         let url = new URL(event.request.url);
         let method = event.request.method;
         let path = url.pathname;
@@ -247,4 +246,4 @@ function Middleware() {
 
 }
 
-exports.Middleware = Middleware;
+console.log("Middleware was loaded");
