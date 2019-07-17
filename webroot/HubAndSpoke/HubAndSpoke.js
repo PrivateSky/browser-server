@@ -12,10 +12,11 @@ function Hub(callback){
     window.addEventListener("message", receiveMessage, false);
 
     function receiveMessage(event) {
-        console.log("Received in Hub:", event, spokes);
-        for(var n in spokes){ //TODO: how we can keep it secure and still optimise this for!?
+        //console.log("Received in Hub:", event, spokes);
+        for(var n in spokes){ //TODO: how we can keep it secure but remove this this search in for!?
             if(spokes[n].wnd === event.source){
                 callback( n, event.data, event);
+                return;
             }
         }
     }
