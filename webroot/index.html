@@ -47,7 +47,7 @@
 
     function doRequest(appName){
         //console.log(str, document.getElementById("log"));
-        hub.sendMessage(appName, {messageFromPrent:"hello"});
+        hub.sendMessage(appName, {messageSentFromHub:"hello!"});
         /*setTimeout(function(){
                 doLog("Requesting " + appname + "!")
                 fetch(appname +'/something').then(

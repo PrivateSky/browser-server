@@ -3,15 +3,21 @@ function Hub(callback){
 
     this.addSpoke = function(childName, wnd, uri){
         spokes[childName] = {wnd, uri};
-        window.addEventListener("message", receiveMessage, false);
-
-        function receiveMessage(event) {
-            callback( childName, event.data, event);
-        }
     }
 
     this.sendMessage = function(name, obj){
         spokes[name].wnd.postMessage(obj,spokes[name].uri);
+    }
+
+    window.addEventListener("message", receiveMessage, false);
+
+    function receiveMessage(event) {
+        console.log("Received in Hub:", event, spokes);
+        for(var n in spokes){ //TODO: how we can keep it secure and still optimise this for!?
+            if(spokes[n].wnd === event.source){
+                callback( n, event.data, event);
+            }
+        }
     }
 }
 
@@ -26,7 +32,6 @@ function Spoke(callback){
     window.addEventListener("message", receiveMessage);
 
     function receiveMessage(event) {
-        console.log("Receiving in child...");
         if(!parent){
             parent = event.source;
         }
