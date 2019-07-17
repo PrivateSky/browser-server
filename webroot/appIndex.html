@@ -25,7 +25,7 @@
 
     var folderName = "/" + appName + "/"
     //var swPath = "http://localhost:8080" + folderName+'sw.js';
-    var swPath = "http://localhost:8080" + '/sw.js';
+    var swPath = "http://localhost:8080" + '/sw-browserified.js';
     window.addEventListener('load', function () {
         console.log("Registering SW for", swPath, folderName);
         navigator.serviceWorker.register(swPath, {scope: folderName} )
@@ -78,7 +78,7 @@
         console.log("Message received in child iframe:", event);
     }, false); */
 
- 
+
     let spoke;
     import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
         spoke = module.createSpoke(function(message){

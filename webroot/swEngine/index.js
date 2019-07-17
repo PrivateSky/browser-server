@@ -1,7 +1,5 @@
-console.log(loadScript("swEngine/utils/Middleware.js"));
-loadScript("swEngine/utils/Middleware.js").then(()=>{console.log(Middleware)});
+const Middleware  = require("./utils/Middleware").Middleware;
 // create a global ref
-console.log("Ceva log");
 let server = new Middleware();
 
 /*

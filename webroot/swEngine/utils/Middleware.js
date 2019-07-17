@@ -245,5 +245,4 @@ function Middleware() {
     };
 
 }
-
-console.log("Middleware was loaded");
+exports.Middleware = Middleware;
