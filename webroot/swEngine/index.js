@@ -4,7 +4,7 @@ let server = new Middleware();
 /*
 *just a simple logger can be removed later
 */
-server.use(function (req, resp, next) {
+server.use(function (req, res, next) {
     console.log("first step");
     next();
 });
@@ -12,12 +12,15 @@ server.use(function (req, resp, next) {
 server.get("/vmq/:channelId", function (req, res, next) {
     console.log(req.params);
     next();
-    //res.send("Hello from the " + req.params.channelId);
 });
 
 server.get("/vmq/:channelName", function (req, res, next) {
     console.log(req.params);
-    res.send("Hello from the " + req.params.channelName);
+    res.json({params:req.params});
+});
+
+server.get("/file", function (req, res, next) {
+    res.attachment("/file/rafa");
 });
 
 

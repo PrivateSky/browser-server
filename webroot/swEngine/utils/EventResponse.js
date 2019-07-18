@@ -1,5 +1,5 @@
-const unsupportedMethods = ["redirect", "location", "links", "jsonp", "render", "sendFile"];
-
+const unsupportedMethods = ["append","redirect", "location", "links", "jsonp", "render", "sendFile"];
+const unsupportedProperties = ["app","headersSent","locals"];
 
 /*
 * sendResponse instance method used to send reponse on event
@@ -15,32 +15,30 @@ FetchEvent.prototype.sendResponse = function(response, status){
 };
 
 function EventResponse(event){
-    this.app = "";
-    this.headerSent = false;
-    this.locals = {};
-    this.statusCode = undefined;
+    let statusCode = undefined;
 
-    unsupportedMethods.forEach((methodName) => {
-        this[methodName] = function () {
-            throw new Error("Unimplemented method!");
-        }
-    });
+    this.attachment = function (path) {
+        //TOOD read from path using browserfs or EDFS
 
-    /**
-     * it should returns the HTTP response header specified by field. The match is case-insensitive.
-     * @param field
-     */
+        let string = "This is a text!";
 
-    /**
-     *
-     */
-    this.attachment = function () {
+        let fileBlob = new Blob([string],{
+            type: "application/octet-stream"
+        });
 
-    }
+        let init = {
+            status: 200, statusText: "OK", headers: {
+               "Content-Disposition": ' attachment; filename="rafa.txt"',
+               "Content-Type": "text/plain"
+            }
+        };
+        event.sendResponse(fileBlob,init);
+    };
+
 
     this.get = function (field) {
 
-    }
+    };
     /**
      * Sends a JSON response. This method sends a response (with the correct content-type) that is the parameter
      * converted to a JSON string using JSON.stringify().
@@ -48,15 +46,42 @@ function EventResponse(event){
      * also use it to convert other values to JSON.
      * @param body
      */
-    this.json = function (body) {
+    this.json = json => {
+        let jsonResponse = new Blob([JSON.stringify(json)], {type: "application/json"});
+        event.sendResponse(jsonResponse, this.statusCode);
+    };
 
+    this.status = status =>{
+        statusCode = status;
+        return this;
     };
-    this.status = function(status){
-        this.statusCode = status;
+    this.send = body =>{
+        event.sendResponse(body, statusCode);
     };
-    this.send = function(body){
-        event.sendResponse(body, this.statusCode);
-    }
+    this.end = () =>{
+        event.sendResponse("", statusCode);
+    };
+
+
+    /**
+     * Add handlers for unimplemented methods
+     * TODO extract these and see also @EventRequest
+     */
+    unsupportedProperties.forEach(unsupportedProperty => {
+        Object.defineProperty(this, unsupportedProperty, {
+            get: function () {
+                throw new Error("Property " + unsupportedProperty + " is not supported!")
+            }
+        })
+    });
+
+    unsupportedMethods.forEach(unsupportedMethod => {
+        Object.defineProperty(this, unsupportedMethod, {
+            get: function () {
+                throw new Error("Method " + unsupportedMethod + " is not supported!")
+            }
+        })
+    });
 }
 
 exports.EventResponse = EventResponse;

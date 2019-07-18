@@ -23,12 +23,27 @@
         });
     }
 
+
+    function download(filename, data) {
+        var element = document.createElement('a');
+        element.setAttribute('href', data);
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+
     var folderName = "/" + appName + "/";
     //var swPath = "http://localhost:8080" + folderName+'sw.js';
     var swPath = "http://localhost:8080" + '/sw-browserified.js';
     window.addEventListener('load', function () {
         console.log("Registering SW for", swPath, folderName);
-        navigator.serviceWorker.register(swPath, {scope: folderName} )
+        navigator.serviceWorker.register(swPath, {scope: folderName})
             .then(function (registration) {
                     console.log(iframeCodeVersion, ': registration with scope: ', registration.scope);
                     if (registrationScopes.indexOf(registration.scope) == -1) {
@@ -42,42 +57,61 @@
     });
 
 
-    function doLog(str){
+    function doLog(str) {
         console.log(str);
-        let node = document.createTextNode(str+"    ");
+        let node = document.createTextNode(str + "    ");
         document.getElementById("log").appendChild(node);
     }
 
 
-    function doRequest(appname){
-        setTimeout(function(){
+    function doRequest(appname) {
+        setTimeout(function () {
             doLog("Requesting " + "/something in " + appname);
-            fetch('/something/'+appname).then(
-                function(response) {
-                    if(response.status == 200){
-                        response.text().then(function(text){
+            fetch('/something/' + appname).then(
+                function (response) {
+                    if (response.status == 200) {
+                        response.text().then(function (text) {
                             doLog(appname + " response is " + text)
                         })
                     } else {
-                        doLog(appname + " not found!!!!!!" )
+                        doLog(appname + " not found!!!!!!")
                     }
 
-                }).catch(function(err){
-                    console.log(err);
-                })
+                }).catch(function (err) {
+                console.log(err);
+            })
         }, 1);
     }
 
 
-    document.getElementById("doRequestButton").addEventListener("click",function(){
+    document.getElementById("doRequestButton").addEventListener("click", function () {
         //doRequest(appName);
 
-        fetch("/vmq/MyChannel-1").then(response=>{
-            response.text().then(text=>console.log(text));
+        fetch("/vmq/MyChannel-1").then(response => {
+            response.json().then(data => console.log(data));
         });
 
-        fetch("/vmq/MyChannel-2").then(response=>{
-            response.text().then(text=>console.log(text));
+        fetch("/vmq/MyChannel-2").then(response => {
+            response.text().then(text => console.log(text));
+        });
+
+
+        fetch("/file").then(response => {
+            let cdHeader = response.headers.get("Content-Disposition");
+            let filename = "data";
+            if (cdHeader) {
+                let startIndex = cdHeader.indexOf("filename=") + 10; // Adjust '+ 10' if filename is not the right one.
+                let endIndex = cdHeader.length - 1; //Check if '- 1' is necessary
+                filename = cdHeader.substring(startIndex, endIndex);
+            }
+
+
+            response.blob().then(blob => {
+                console.log(blob);
+                let downloadData = URL.createObjectURL(blob);
+                download(filename, downloadData)
+
+            });
         });
     });
 
@@ -89,11 +123,11 @@
 
     let spoke;
     import('/HubAndSpoke/HubAndSpoke.js').then((module) => {
-        spoke = module.createSpoke(function(message){
-            console.log(appName,"Message from parent ", message, spoke);
-            spoke.sendMessage({messageFrom:appName});
+        spoke = module.createSpoke(function (message) {
+            console.log(appName, "Message from parent ", message, spoke);
+            spoke.sendMessage({messageFrom: appName});
         })
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
     });
 

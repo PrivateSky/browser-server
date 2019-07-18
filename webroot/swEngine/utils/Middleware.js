@@ -149,26 +149,9 @@ function Middleware() {
      * @param response
      */
     this.executeRequest = function (request, response) {
-        let url = new URL(request.originalUrl);
         let method = request.method;
         let path = request.path;
 
-        /**
-         * Extract query params from url
-         * @type {URLSearchParams}
-         */
-        let searchParams = url.searchParams;
-        let queryParams = {};
-
-        for (let pair of searchParams.entries()) {
-            queryParams[pair[0]] = pair[1];
-        }
-        //add query parameters to event
-        request.query = queryParams;
-
-        if(! request.params){
-            request.params = {};
-        }
 
         let requestHandlers = findPathCandidates(path, method);
         let index = 0;

@@ -1,7 +1,20 @@
 const unsupportedMethods = ["acceptsCharsets", "acceptsEncodings", "acceptsLanguages", "param", "is", "range"];
-const unsupportedProperties = ["ip","ips",];
-function extractIpFromUrl(url){
+const unsupportedProperties = ["app","fresh","ip","ips","signedCookies","stale","subdomains","xhr"];
 
+
+/**
+ * Extract query params from url
+ * @param url
+ */
+function extractQueryParams (url){
+
+    let searchParams = url.searchParams;
+    let queryParams = {};
+
+    for (let pair of searchParams.entries()) {
+        queryParams[pair[0]] = pair[1];
+    }
+    return queryParams;
 }
 
 function EventRequest(event) {
@@ -9,9 +22,15 @@ function EventRequest(event) {
     this.body = event.request.body;
     this.method = event.request.method;
     this.originalUrl = event.request.url;
-    this.path = new URL(this.originalUrl).pathname;
-    this.params = event.request.params;
-    this.query = event.request.query;
+    let url = new URL(this.originalUrl);
+    this.path = url.pathname;
+    this.hostname = url.hostname;
+    this.protocol = url.protocol;
+    this.params = {};
+    this.query = extractQueryParams(url);
+    this.secure = this.protocol === "https";
+
+
 
     /**
      * Checks if the specified content types are acceptable, based on the request’s Accept HTTP header field.
@@ -22,7 +41,7 @@ function EventRequest(event) {
      * @param types
      */
     this.accepts = function(types){
-
+        throw new Error("Unimplemented method!");
     };
 
     /**
@@ -30,8 +49,28 @@ function EventRequest(event) {
      * @param field
      */
     this.get = function(field){
-
+        throw new Error("Unimplemented method!");
     };
+
+    /**
+     * Add handlers for unimplemented methods
+     * TODO extract these and see also @EventResponse
+     */
+    unsupportedProperties.forEach(unsupportedProperty => {
+        Object.defineProperty(this, unsupportedProperty, {
+            get: function () {
+                throw new Error("Property " + unsupportedProperty + " is not supported!")
+            }
+        })
+    });
+
+    unsupportedMethods.forEach(unsupportedMethod => {
+        Object.defineProperty(this, unsupportedMethod, {
+            get: function () {
+                throw new Error("Method " + unsupportedMethod + " is not supported!")
+            }
+        })
+    });
 }
 
 exports.EventRequest = EventRequest;
