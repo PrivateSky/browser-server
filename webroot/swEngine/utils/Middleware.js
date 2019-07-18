@@ -1,4 +1,5 @@
-//see as example https://github.com/PrivateSky/virtualmq/blob/master/libs/http-wrapper/src/classes/Middleware.js
+const EventResponse  = require("./EventResponse").EventResponse;
+const EventRequest = require("./EventRequest").EventRequest;
 
 function Middleware() {
     let acceptedMethods = ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"];
@@ -142,14 +143,15 @@ function Middleware() {
         return candidates;
     }
 
-    /** execute request
-     * TODO investigate and discuss if is easy to adapt a node http response object to a WEB API response
-     * @param event
+    /**
+     * execute the request
+     * @param request
+     * @param response
      */
-    this.executeRequest = function (event) {
-        let url = new URL(event.request.url);
-        let method = event.request.method;
-        let path = url.pathname;
+    this.executeRequest = function (request, response) {
+        let url = new URL(request.originalUrl);
+        let method = request.method;
+        let path = request.path;
 
         /**
          * Extract query params from url
@@ -162,36 +164,33 @@ function Middleware() {
             queryParams[pair[0]] = pair[1];
         }
         //add query parameters to event
-        event.queryParams = queryParams;
+        request.query = queryParams;
+
+        if(! request.params){
+            request.params = {};
+        }
 
         let requestHandlers = findPathCandidates(path, method);
         let index = 0;
 
-        function executeNextHandler(event, index) {
+
+        function executeNextHandler(request, response, index) {
 
             if (requestHandlers[index]) {
 
                 if (requestHandlers[index].params) {
-                    //TODO should I gather params from all matching handlers?
-                    event.params = requestHandlers[index].params;
+                    request.params = requestHandlers[index].params;
                 }
 
                 let nextHandler = requestHandlers[index].handler;
                 if (typeof  nextHandler === "function")
-                    nextHandler(event, () => executeNextHandler(event, ++index));
-            }
-            else {
-                /**
-                 * TODO is this necessary?
-                 */
-                //console.error("No more handlers triggered by next ");
+                    nextHandler(request, response, () => executeNextHandler(request, response, ++index));
             }
         }
 
         if (requestHandlers.length > 0) {
-            executeNextHandler(event, index);
+            executeNextHandler(request,response, index);
         }
-
     };
 
     /**
@@ -244,5 +243,14 @@ function Middleware() {
 
     };
 
+    this.init = (serviceWorker) =>{
+        serviceWorker.addEventListener('fetch', (event)=>{
+            console.log("Handling event", event);
+            let request = new EventRequest(event);
+            let response = new EventResponse(event);
+            this.executeRequest(request, response);
+        });
+        console.log("Initialized! Prepared to capture requests!")
+    };
 }
 exports.Middleware = Middleware;

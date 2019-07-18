@@ -1,26 +1,3 @@
-/*async function loadScript(file){
-    let remoteRenspose = await fetch(file);
-    let fileContent = await remoteRenspose.text();
-    eval(fileContent);
-
-    /!*fetch(file).then((remoteReponse) => {
-        remoteReponse.text().then((text)=>{eval(text)});
-    });*!/
-}*/
-
-
-async function loadScript(file){
-
-    async function innerLoader(name){
-        let remoteRenspose = await fetch(file);
-        let fileContent = await remoteRenspose.text();
-        return eval(fileContent);
-    }
-
-    return innerLoader(file);
-}
-
-
 let version ="child";
 
 
@@ -59,4 +36,3 @@ self.addEventListener('fetch', function (event) {
 
 });
 
-//loadScript('./swEngine/index.js');

@@ -44,7 +44,7 @@
 
     function doLog(str){
         console.log(str);
-        let node = document.createTextNode(str+"    ")
+        let node = document.createTextNode(str+"    ");
         document.getElementById("log").appendChild(node);
     }
 
@@ -70,7 +70,15 @@
 
 
     document.getElementById("doRequestButton").addEventListener("click",function(){
-        doRequest(appName);
+        //doRequest(appName);
+
+        fetch("/vmq/MyChannel-1").then(response=>{
+            response.text().then(text=>console.log(text));
+        });
+
+        fetch("/vmq/MyChannel-2").then(response=>{
+            response.text().then(text=>console.log(text));
+        });
     });
 
     /*
