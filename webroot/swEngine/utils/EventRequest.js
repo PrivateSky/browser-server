@@ -1,12 +1,12 @@
 const unsupportedMethods = ["acceptsCharsets", "acceptsEncodings", "acceptsLanguages", "param", "is", "range"];
-const unsupportedProperties = ["app","fresh","ip","ips","signedCookies","stale","subdomains","xhr"];
+const unsupportedProperties = ["app", "fresh", "ip", "ips", "signedCookies", "stale", "subdomains", "xhr"];
 
 
 /**
  * Extract query params from url
  * @param url
  */
-function extractQueryParams (url){
+function extractQueryParams(url) {
 
     let searchParams = url.searchParams;
     let queryParams = {};
@@ -41,6 +41,11 @@ function EventRequest(event) {
     this.query = extractQueryParams(url);
     this.secure = this.protocol === "https";
 
+    let requestHeaders = {};
+
+    for (let [header, value] of event.request.headers.entries()) {
+        requestHeaders[header] = value;
+    }
 
 
     /**
@@ -51,7 +56,7 @@ function EventRequest(event) {
      * a comma-delimited list, or an array. For a list or array, the method returns the best match (if any).
      * @param types
      */
-    this.accepts = function(types){
+    this.accepts = function (types) {
         throw new Error("Unimplemented method!");
     };
 
@@ -59,8 +64,12 @@ function EventRequest(event) {
      * Returns the specified HTTP request header field (case-insensitive match). The Referrer and Referer fields are interchangeable.
      * @param field
      */
-    this.get = function(field){
-        throw new Error("Unimplemented method!");
+    this.get = function (field) {
+        let headerName = Object.keys(requestHeaders).find(headerName => {
+            return headerName.toLowerCase() === field.toLowerCase();
+        });
+
+        return requestHeaders[headerName];
     };
 
     /**

@@ -7,6 +7,7 @@ let server = new Middleware();
 server.use(function (req, res, next) {
     console.log(req.body);
     console.log("first step");
+    console.log(req.get("content-type"));
     next();
 });
 
