@@ -4,7 +4,7 @@ const staticCacheName = `${version}static-resources`;
 
 //const cachePrefix = "https://raw.githubusercontent.com/PrivateSky/browser-server/master/webroot";
 //const cachePrefix  = "https://cdn.jsdelivr.net/gh/PrivateSky/browser-server/webroot";
-const cachePrefix = "http://192.168.1.70:8080";
+const cachePrefix = "http://192.168.103.149:8080";
 
 
 

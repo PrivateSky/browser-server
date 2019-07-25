@@ -1,20 +1,25 @@
-const unsupportedMethods = ["append","redirect", "location", "links", "jsonp", "render", "sendFile"];
-const unsupportedProperties = ["app","headersSent","locals"];
+const unsupportedMethods = ["append", "redirect", "location", "links", "jsonp", "render", "sendFile"];
+const unsupportedProperties = ["app", "headersSent", "locals"];
+const httpStatuses = require("./HttpStatuses").httpStatuses;
 
 /*
 * sendResponse instance method used to send reponse on event
 ***/
-FetchEvent.prototype.sendResponse = function(response, status){
-    let eventStatus = status || {"status": 200, "statusText": "ok"};
-    let eventResponse = response || "";
+FetchEvent.prototype.sendResponse = function (responseBody, status) {
+    let eventStatus = httpStatuses[status] ? {status: status, statusText: httpStatuses[status]} : {
+        "status": 200,
+        "statusText": "OK"
+    };
+    let eventResponse = responseBody || "";
 
-    this.respondWith(new Promise((resolve) => {
-        let response = new Response(eventResponse, eventStatus);
-        resolve(response);
-    }));
-};
+    if (!this.resolver) {
+        throw new Error("Event resolver is not defined!. It sholuld be a promise resolver!")
+    }
+    let response = new Response(eventResponse, eventStatus);
+    this.resolver(response);
+}
 
-function EventResponse(event){
+function EventResponse(event) {
     let statusCode = undefined;
 
     this.attachment = function (path) {
@@ -22,17 +27,17 @@ function EventResponse(event){
 
         let string = "This is a text!";
 
-        let fileBlob = new Blob([string],{
+        let fileBlob = new Blob([string], {
             type: "application/octet-stream"
         });
 
         let init = {
             status: 200, statusText: "OK", headers: {
-               "Content-Disposition": ' attachment; filename="rafa.txt"',
-               "Content-Type": "text/plain"
+                "Content-Disposition": ' attachment; filename="rafa.txt"',
+                "Content-Type": "text/plain"
             }
         };
-        event.sendResponse(fileBlob,init);
+        event.sendResponse(fileBlob, init);
     };
 
 
@@ -48,17 +53,21 @@ function EventResponse(event){
      */
     this.json = json => {
         let jsonResponse = new Blob([JSON.stringify(json)], {type: "application/json"});
-        event.sendResponse(jsonResponse, this.statusCode);
+        setTimeout(() => event.sendResponse(jsonResponse, this.statusCode), 2000);
     };
 
-    this.status = status =>{
+    this.status = status => {
         statusCode = status;
         return this;
     };
-    this.send = body =>{
-        event.sendResponse(body, statusCode);
+    this.send = body => {
+        let responseBody = body;
+        if (typeof body === "object") {
+            responseBody = JSON.stringify(body);
+        }
+        event.sendResponse(responseBody, statusCode);
     };
-    this.end = () =>{
+    this.end = () => {
         event.sendResponse("", statusCode);
     };
 

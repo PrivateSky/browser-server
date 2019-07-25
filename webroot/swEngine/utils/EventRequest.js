@@ -19,7 +19,18 @@ function extractQueryParams (url){
 
 function EventRequest(event) {
 
-    this.body = event.request.body;
+    this.body = {};
+
+    if (event.request.body instanceof FormData) {
+        for (let pair  of event.request.body.entries()) {
+            this.body[pair[0]] = pair[1]
+        }
+    }
+    else {
+        this.body = event.request.body;
+    }
+
+
     this.method = event.request.method;
     this.originalUrl = event.request.url;
     let url = new URL(this.originalUrl);

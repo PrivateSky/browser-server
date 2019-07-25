@@ -5,6 +5,7 @@ let server = new Middleware();
 *just a simple logger can be removed later
 */
 server.use(function (req, res, next) {
+    console.log(req.body);
     console.log("first step");
     next();
 });
@@ -25,6 +26,12 @@ server.get("/file", function (req, res, next) {
 
 
 server.post("/vmq/:channelId", function(req, res, next){
+    if(typeof req.body === "object"){
+        res.status(200).send({status:"ok"});
+    }
+    else{
+        res.status(200).send({status:"ok"});
+    }
 
 });
 

@@ -1,5 +1,6 @@
-const EventResponse  = require("./EventResponse").EventResponse;
+const EventResponse = require("./EventResponse").EventResponse;
 const EventRequest = require("./EventRequest").EventRequest;
+const httpStatuses = require("./HttpStatuses").httpStatuses;
 
 function Middleware() {
     let acceptedMethods = ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"];
@@ -172,7 +173,7 @@ function Middleware() {
         }
 
         if (requestHandlers.length > 0) {
-            executeNextHandler(request,response, index);
+            executeNextHandler(request, response, index);
         }
     };
 
@@ -226,14 +227,76 @@ function Middleware() {
 
     };
 
-    this.init = (serviceWorker) =>{
-        serviceWorker.addEventListener('fetch', (event)=>{
-            console.log("Handling event", event);
-            let request = new EventRequest(event);
-            let response = new EventResponse(event);
-            this.executeRequest(request, response);
+    /**
+     * Returns a promise that will resolve the request body depending on the received headers.
+     * @param event
+     * @returns {Promise<any>}
+     */
+    async function extractBody(event) {
+        let body;
+        let request = event.request;
+        let headers = request.headers;
+        let contentType = "text/plain";
+        if (headers.has('Content-Type')) {
+            contentType = headers.get('Content-Type');
+        }
+
+        let typeAndSubtype = contentType.split(";")[0];
+
+        switch (typeAndSubtype) {
+            case "application/json":
+                body = await request.json();
+                break;
+            case "application/x-www-form-urlencoded":
+                body = await request.formData();
+                break;
+            case "multipart/form-data":
+                body = await request.formData();
+                break;
+            case "application/octet-stream":
+                body = await request.arrayBuffer();
+            default:
+                body = await request.text();
+        }
+
+        return body;
+
+    }
+
+    this.init = (serviceWorker) => {
+        serviceWorker.addEventListener('fetch', (event) => {
+
+            /**
+             * A promise should be returned synchronously
+             */
+            event.respondWith(new Promise((resolve, reject) => {
+                event.resolver = resolve;
+
+                /*event.sendResponse = function (responseData, status) {
+                    let eventStatus = httpStatuses[status] ? {
+                        status: status,
+                        statusText: httpStatuses[status]
+                    } : {"status": 200, "statusText": "OK"};
+                    let eventResponse = responseData || "";
+
+                    let response = new Response(eventResponse, eventStatus);
+                    resolve(response);
+                };*/
+
+                console.log("Handling event", event);
+                extractBody(event).then(body => {
+
+                    event.request.body = body;
+                    let request = new EventRequest(event);
+                    let response = new EventResponse(event);
+                    this.executeRequest(request, response);
+
+                });
+            }));
+
         });
         console.log("Initialized! Prepared to capture requests!")
     };
 }
+
 exports.Middleware = Middleware;
