@@ -32,7 +32,15 @@ server.post("/vmq/:channelId", function(req, res, next){
     else{
         res.status(200).send({status:"ok"});
     }
+});
 
+server.post("/upload", function(req, res, next){
+    if(req.body.attachment instanceof  File){
+        res.status(200).send({status:"File upload completed"});
+    }
+    else{
+        res.status(500).send({status:"File upload failed"});
+    }
 });
 
 /*

@@ -4,13 +4,27 @@
     <meta charset="UTF-8">
 </head>
 <body>
+<h4 id="frameName"></h4>
 <div id="log"></div><button id="doRequestButton">Do request</button>
+
+<form action="#">
+    <div>
+        <input type="text" id="app_id"/>
+        <input type="file" id="avatar_img" accept="image/x-png" multiple />
+    </div>
+    <div>
+        <button id="btnSubmit">Upload Avatar</button>
+    </div>
+</form>
+
+
 
 <script>
     let iframeCodeVersion = "iframeCode-v4";
     let search = window.location.search;
     let appName = search.substring(1);
     //document.getElementById("version").innerText = iframeCodeVersion + " : " + appName;
+    document.getElementById("frameName").innerText=appName;
     console.log("Loading iframe:", iframeCodeVersion)
 
     var registrationScopes = [];
@@ -110,26 +124,6 @@
             response.json().then(data => console.log(data));
         });
 
-
-        /*fetch("/file").then(response => {
-            let cdHeader = response.headers.get("Content-Disposition");
-            let filename = "data";
-            if (cdHeader) {
-                let startIndex = cdHeader.indexOf("filename=") + 10; // Adjust '+ 10' if filename is not the right one.
-                let endIndex = cdHeader.length - 1; //Check if '- 1' is necessary
-                filename = cdHeader.substring(startIndex, endIndex);
-            }
-
-
-            response.blob().then(blob => {
-                console.log(blob);
-                let downloadData = URL.createObjectURL(blob);
-                download(filename, downloadData)
-
-            });
-        });*/
-
-
         postData('/vmq/MyChannel-3', {csbType: "FileAttachment"})
             .then(data => console.log(data)) // JSON-string from `response.json()` call
             .catch(error => console.error(error));
@@ -139,6 +133,38 @@
             .then(data => console.log(data)) // JSON-string from `response.json()` call
             .catch(error => console.error(error));
     });
+
+
+    function upload(ev){
+        ev.preventDefault();    //stop the form submitting
+
+        //create any headers we want
+        let h = new Headers();
+        h.append('Accept', 'application/json'); //what we expect back
+        //bundle the files and data we want to send to the server
+        let fd = new FormData();
+        fd.append('app-id', document.getElementById('app_id').value);
+
+        let myFile = document.getElementById('avatar_img').files[0];
+        fd.append('attachment', myFile, myFile.name);
+        // $_FILES['avatar']['file_name']  "avatar.png"
+        let req = new Request("/upload", {
+            method: 'POST',
+            headers: h,
+            mode: 'no-cors',
+            body: fd
+        });
+
+        fetch(req)
+            .then( (response)=>{
+                response.json().then(data=>console.log(data.status));
+            })
+            .catch( (err) =>{
+                console.log('ERROR:', err.message);
+            });
+    }
+
+    document.getElementById('btnSubmit').addEventListener('click', upload);
 
     /*
     window.addEventListener("message", function(event){
