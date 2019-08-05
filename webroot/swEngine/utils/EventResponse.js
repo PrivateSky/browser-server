@@ -21,6 +21,7 @@ FetchEvent.prototype.sendResponse = function (responseBody, status) {
 
 function EventResponse(event) {
     let statusCode = undefined;
+    let responseHeaders = {};
 
     this.attachment = function (path) {
         //TOOD read from path using browserfs or EDFS
@@ -39,9 +40,32 @@ function EventResponse(event) {
         };
         event.sendResponse(fileBlob, init);
     };
-
-
+    /**
+     * Sets the response’s HTTP header field to value. To set multiple fields at once, pass an object as the parameter.
+     * @param params
+     */
+    this.set = function (...params) {
+        if (params.length === 2 && typeof params[0] === "string" && typeof params[1] === "string") {
+            responseHeaders[params[0]] = params[1];
+        }
+        else if (params.length === 1 && typeof params[0] === "object") {
+            responseHeaders = params[0];
+        }
+        else {
+            throw new Error("This function accepts as arguments an object or two strings ")
+        }
+    };
+    /**
+     * Returns the HTTP response header specified by field. The match is case-insensitive.
+     * @param field
+     */
     this.get = function (field) {
+
+       let headerName = Object.keys(responseHeaders).find(headerName=>{
+           return headerName.toLowerCase() === field.toLowerCase();
+       });
+
+       return responseHeaders[headerName];
 
     };
     /**
