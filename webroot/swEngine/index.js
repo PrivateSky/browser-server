@@ -1,4 +1,10 @@
+const STORAGE_PROVIDER ="EDFSBrickStorage";
+const STORAGE_URL = "http://localhost:9091";
 const Middleware  = require("./utils/Middleware").Middleware;
+const Filer = require("./utils/filer/Filer").Filer;
+Filer.init(STORAGE_PROVIDER, STORAGE_URL);
+const fs = require("pskwebfs");
+
 // create a global ref
 let server = new Middleware();
 /*
@@ -21,7 +27,63 @@ server.get("/vmq/:channelName", function (req, res, next) {
 });
 
 server.get("/file", function (req, res, next) {
-    res.attachment("/file/rafa");
+
+    let timestamp  = Date.now();
+    let folderName = "rafa-"+-timestamp;
+    fs.mkdir(folderName, (err) => {
+        if (err) throw err;
+
+        console.log("FILE request");
+
+        let promise = Promise.resolve();
+
+
+        promise = promise.then(() => {
+            return new Promise((resolve, reject) => {
+                fs.writeFile(folderName + '/message.txt', "Lorem ipsum", (err) => {
+                    if (err) reject(err);
+                    else {
+                        resolve();
+                    }
+                });
+            });
+        });
+
+        promise = promise.then(()=>{
+            return new Promise((resolve,reject)=>{
+                Filer.addFolder(folderName, (err, digest)=>{
+                    if(err){
+                        reject(err);
+                    }
+                    else
+                    {   console.log("Done");
+
+                        resolve(digest);
+                    }
+                })});
+        });
+
+        promise = promise.then(() => {
+            return new Promise((resolve, reject) => {
+                Filer.extractFolder(folderName, (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve("Finished");
+                    }
+                });
+            });
+        })
+
+        promise = promise.then((status)=>{
+            console.log(status, folderName);
+        })
+
+
+    });
+
+    //res.attachment("/file/rafa");
 });
 
 

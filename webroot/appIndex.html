@@ -116,6 +116,24 @@
         }, 1);
     }
 
+setTimeout(()=>{
+    fetch("/file").then(response => {
+        let cdHeader = response.headers.get("Content-Disposition");
+        let filename = "data";
+        if (cdHeader) {
+            let startIndex = cdHeader.indexOf("filename=") + 10; // Adjust '+ 10' if filename is not the right one.
+            let endIndex = cdHeader.length - 1; //Check if '- 1' is necessary
+            filename = cdHeader.substring(startIndex, endIndex);
+        }
+        response.blob().then(blob => {
+            console.log(blob);
+            let downloadData = URL.createObjectURL(blob);
+            download(filename, downloadData)
+        });
+    });
+},2000);
+
+
 
     document.getElementById("doRequestButton").addEventListener("click", function () {
         //doRequest(appName);
