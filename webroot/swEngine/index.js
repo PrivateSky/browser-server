@@ -1,9 +1,9 @@
 const STORAGE_PROVIDER ="EDFSBrickStorage";
-const STORAGE_URL = "http://localhost:9091";
+const STORAGE_URL = "http://192.168.103.149:9091";
 const Middleware  = require("./utils/Middleware").Middleware;
 const Filer = require("./utils/filer/Filer").Filer;
 Filer.init(STORAGE_PROVIDER, STORAGE_URL);
-const fs = require("pskwebfs");
+const fs = require("fs");
 
 // create a global ref
 let server = new Middleware();
@@ -45,6 +45,19 @@ server.get("/file", function (req, res, next) {
                     if (err) reject(err);
                     else {
                         resolve();
+                    }
+                });
+            });
+        });
+
+
+        promise = promise.then(() => {
+            return new Promise((resolve, reject) => {
+                fs.access(folderName + '/message.txt', (err, stats) => {
+                    if (err) reject(err);
+                    else {
+                        console.log(stats);
+                        resolve(stats);
                     }
                 });
             });

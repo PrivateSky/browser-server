@@ -4,9 +4,8 @@
   "description": "This is part of PrivateSky project and going on the idea of creating self sovereign applications (SSApps)\r using the CSB (Cloud Safe Box) and EDFS  (Encrypted Distributed File System) technologies from PrivateSKy.\r We try to have here a proof about sandboxing iframes code and service worker code, security and the method of creating containers for SSApps.\r We simulate a http server using service workers and have a proof of concept for the ways of creating SSApps.",
   "main": "index.js",
   "scripts": {
-    "build2": "node ./bin/build.js",
-    "build": "browserify  --external webroot/swEngine/index.js  > webroot/sw-browserified.js",
-    "watch": "watchify -v  --delay 300 webroot/swEngine/index.js -o webroot/sw-browserified.js"
+    "build": "node ./bin/build.js",
+    "start": "cd webroot && http-server -p 8080 -c -1 --cors"
   },
   "repository": {
     "type": "git",
@@ -19,10 +18,9 @@
   },
   "homepage": "https://github.com/PrivateSky/browser-server#readme",
   "dependencies": {
-    "browserify": "16.3.0",
-    "@msgpack/msgpack": "1.7.0"
+    "browserify": "16.3.0"
   },
   "devDependencies": {
-    "watchify": "3.11.1"
+    "http-server": "^0.11.1"
   }
 }
