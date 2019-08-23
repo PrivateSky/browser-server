@@ -31,9 +31,9 @@ function createResponse(event) {
         var mimeType = (newUrl.indexOf(".js") != newUrl.length - 3)?'text/html':'text/javascript';
         console.log("Loading resource from:",newUrl, mimeType);
 
-        return fetch(newUrl).then((remoteReponse) => {
+        return fetch(newUrl).then((remoteResponse) => {
             var init = {"status": 200, "statusText": "File was successfully extracted"};
-            remoteReponse.text().then(text => {
+            remoteResponse.text().then(text => {
                 var blob = new Blob([text], {type: mimeType});
                 let response = new Response(blob, init);
                 //cache.put(event.request, response);
