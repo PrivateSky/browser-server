@@ -28,7 +28,7 @@
     let addIframe = function(){
         let appName = "app"+appIndex + "_" + Math.floor(Math.random()*100000000)+"~";
         let newIframe = document.createElement("iframe");
-        newIframe.setAttribute("sandbox","allow-scripts allow-same-origin");
+        newIframe.setAttribute("sandbox","allow-scripts allow-same-origin allow-downloads-without-user-activation allow-forms");
         newIframe.src="/"+appName+"/appIndex.html?"+appName;
         document.body.appendChild(newIframe);
         apps.push(appName);

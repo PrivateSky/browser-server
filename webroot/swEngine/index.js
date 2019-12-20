@@ -1,8 +1,18 @@
 const STORAGE_PROVIDER ="EDFSBrickStorage";
 const STORAGE_URL = "http://192.168.103.149:9091";
 const Middleware  = require("./utils/Middleware").Middleware;
-const Filer = require("./utils/filer/Filer").Filer;
-Filer.init(STORAGE_PROVIDER, STORAGE_URL);
+//const Filer = require("./utils/filer/Filer").Filer;
+//Filer.init(STORAGE_PROVIDER, STORAGE_URL);
+const Filer = {
+    extractFolder:function(){
+        console.log("Not implemented");
+    },
+    addFolder:function () {
+        console.log("Not implemented");
+    }
+
+
+}
 const fs = require("fs");
 
 // create a global ref
@@ -11,6 +21,7 @@ let server = new Middleware();
 *just a simple logger can be removed later
 */
 server.use(function (req, res, next) {
+    console.log("NEW REQUEST");
     console.log(req.body);
     console.log("first step");
     console.log(req.get("content-type"));
@@ -132,7 +143,6 @@ server.use(function (req, resp, next) {
 */
 server.init(self);
 
-
 self.addEventListener('activate', function (event) {
     console.log("Activating service worker", event);
     try{
@@ -140,6 +150,6 @@ self.addEventListener('activate', function (event) {
     } catch(err){
         console.log(err);
     }
-
 });
+
 

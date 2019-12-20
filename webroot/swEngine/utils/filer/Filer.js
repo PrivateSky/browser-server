@@ -15,14 +15,14 @@ function Filer(){
 
 Filer.prototype.init = function(storageProvider, url){
 
-    const ArchiveConfigurator = bar.ArchiveConfigurator;
+    /*const ArchiveConfigurator = bar.ArchiveConfigurator;
     const createFsAdapter = bar.createFsBarWorker;
     ArchiveConfigurator.prototype.registerDiskAdapter("fsAdapter", createFsAdapter);
     const archiveConfigurator = new ArchiveConfigurator();
     archiveConfigurator.setDiskAdapter("fsAdapter");
     archiveConfigurator.setBufferSize(256);
     archiveConfigurator.setStorageProvider(storageProvider, url);
-    this.archive = new bar.Archive(archiveConfigurator);
+    this.archive = new bar.Archive(archiveConfigurator);*/
 
 };
 exports.Filer = new Filer();
