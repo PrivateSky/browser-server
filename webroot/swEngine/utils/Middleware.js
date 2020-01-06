@@ -97,6 +97,12 @@ function Middleware() {
             }
 
             for (let i = 0; i < handlerParts.length; i++) {
+
+                if(requestParts[i].length === 0){
+                    result.match = false;
+                    break;
+                }
+
                 if (handlerParts[i].startsWith(":")) {
                     result.params[handlerParts[i].substring(1)] = requestParts[i];
                     continue;

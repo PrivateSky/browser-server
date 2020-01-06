@@ -91,6 +91,17 @@ function EventResponse(event) {
         }
         event.sendResponse(responseBody, statusCode);
     };
+    /**
+     * TODO
+     * wip
+     **/
+    this.write = stream => {
+        let responseBody = body;
+        if (typeof body === "object") {
+            responseBody = JSON.stringify(stream);
+        }
+        event.sendResponse(responseBody, statusCode);
+    };
     this.end = () => {
         event.sendResponse("", statusCode);
     };
