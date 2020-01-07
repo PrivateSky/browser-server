@@ -58,6 +58,14 @@ function createChannel(channelName, callback) {
 
 function sendMessage(channelName, message, callback) {
 
+    try{
+        SwarmPacker.unpack(message.buffer);
+    }catch(error){
+        let e = new Error("SwarmPacker could not deserialize message");
+        e.code = 400;
+        callback(e);
+    }
+
     let queue = _getQueue(channelName);
     let subscribers = _getSubscribersList(channelName);
     let dispatched = false;
