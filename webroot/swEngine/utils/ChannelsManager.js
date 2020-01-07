@@ -1,4 +1,3 @@
-let channelManagerInstance = null;
 let Queue = require("swarmutils").Queue;
 const maxQueueSize = 100;
 const TOKEN_PLACEHOLDER = "WEB_TOKEN_PLACEHOLDER";
@@ -32,13 +31,14 @@ function _deliverMessage(subscribers, message) {
                 dispatched = true;
             } else {
                 let e = new Error("Already dispatched");
-                callback(e);
+                e.code = 403;
+                subscriberCallback(e);
             }
         }
     } catch (err) {
         //... some subscribers could have a timeout connection
         if (subscribers.length > 0) {
-            deliverMessage(subscribers, message);
+            _deliverMessage(subscribers, message);
         }
     }
 
@@ -100,15 +100,19 @@ function receiveMessage(channelName, callback) {
 
 function ChannelsManager() {
 
-    if (!channelManagerInstance) {
         this.createChannel = createChannel;
         this.sendMessage = sendMessage;
         this.receiveMessage = receiveMessage;
-        channelManagerInstance = this;
+        this.forwardMessage = function (channel, enable, callback) {
+            let e = new Error("Unsupported feature");
+            e.code = 403;
+            callback(e);
+        };
         console.log("ChannelsManager initialised!");
-    }
-    return channelManagerInstance;
 }
 
+let channelManagerInstance = new ChannelsManager();
 
-module.exports.ChannelsManager = new ChannelsManager();
+module.exports.getChannelsManager = function(){
+    return channelManagerInstance;
+}

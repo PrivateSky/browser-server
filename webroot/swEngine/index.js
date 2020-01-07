@@ -1,7 +1,7 @@
 const STORAGE_PROVIDER = "EDFSBrickStorage";
 const STORAGE_URL = "http://192.168.103.149:9091";
 const Middleware = require("./utils/Middleware").Middleware;
-const ChannelsManager = require("./utils/ChannelsManager").ChannelsManager;
+const ChannelsManager = require("./utils/ChannelsManager").getChannelsManager();
 const UtilFunctions = require("./utils/utilFunctions").UtilFunctions;
 //const Filer = require("./utils/filer/Filer").Filer;
 //Filer.init(STORAGE_PROVIDER, STORAGE_URL);
@@ -134,6 +134,15 @@ server.put("/create-channel/:channelName", function (req, res) {
 
         } else {
             res.status(200);
+        }
+        res.end();
+    });
+});
+
+server.post("/forward-zeromq/:channelName", function(req, res){
+    ChannelsManager.forwardMessage(req.params.channelName,function(err){
+        if(err){
+            res.status(err.code || 500);
         }
         res.end();
     });
