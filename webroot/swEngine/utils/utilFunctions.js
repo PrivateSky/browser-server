@@ -33,7 +33,7 @@ function write2Buffer(buffer, dataToAppend, offset) {
 function prepareMessage(req, callback){
     const contentType = req.headers['content-type'];
     if (contentType === 'application/octet-stream') {
-        const contentLength = Number.parseInt(req.headers['content-length'], 10);
+        const contentLength = Number.parseInt(req.headers['Content-Length'], 10);
 
         if(Number.isNaN(contentLength)){
             let e = new Error("Length Required");
@@ -41,14 +41,15 @@ function prepareMessage(req, callback){
             return callback(e);
         }
         else{
-            streamToBuffer(req, contentLength, (err, bodyAsBuffer) => {
-                if(err) {
-                    err.code = 500;
-                    return callback(err);
-                }
-
-                callback(undefined, bodyAsBuffer);
-            });
+            callback(undefined,req.body);
+            // streamToBuffer(req, contentLength, (err, bodyAsBuffer) => {
+            //     if(err) {
+            //         err.code = 500;
+            //         return callback(err);
+            //     }
+            //
+            //     callback(undefined, bodyAsBuffer);
+            // });
         }
 
     } else {

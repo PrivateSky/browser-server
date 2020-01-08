@@ -261,6 +261,7 @@ function Middleware() {
                 break;
             case "application/octet-stream":
                 body = await request.arrayBuffer();
+                break;
             default:
                 body = await request.text();
         }

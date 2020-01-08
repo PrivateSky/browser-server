@@ -1,16 +1,23 @@
-//The sandbox is responsible for the execution of the transaction received thru VMQ
-//once the transaction is executed will return the result to the application
+const InnerServiceWorkerPC = require("./InnerServiceWorkerPC.js");
+const se = require("swarm-engine");
 
-_$$_.soundpubSub.subscribe("SWARM_FOR_EXECUTION", function(swarm){
-    console.log("I got the swarm ... now preparing to execute...");
+se.initialise("*");
+
+$$.swarms.describe("echo", {
+    say: function(message){
+        setTimeout(()=>{
+            this.return(null, message+"O");
+        },2000);
+
+    }
 });
 
+/*
+*  InnerServiceWorkerPowerCord in functia de sendSwarm verifica SwarmTargetul din header
+*  si daca este de tip URL trebuie sa puna in canalul extrax din swarmTarget
+* */
+let pc = new InnerServiceWorkerPC();
 
 
+$$.swarmEngine.plug("*", pc);
 
-
-
-
-server.post("/:csbui/vmq/inbound", function(event, next){
-    _$$_.soundpubSub.publish("SWARM_FOR_EXECUTION", event.params.swarm);
-});

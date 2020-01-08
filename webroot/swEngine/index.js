@@ -77,6 +77,27 @@ server.post("/forward-zeromq/:channelName", forwardMessageHandler);
 server.post("/send-message/:channelName", sendMessageHandler);
 server.get("/receive-message/:channelName", receiveMessageHandler);
 
+
+server.use(function(req,res, next){
+    if(req.method.toUpperCase()!=="OPTIONS"){
+        next();
+    }
+    else{
+        console.log("OPTIONS request");
+        const headers = {};
+        // IE8 does not allow domains to be specified, just the *
+        headers["Access-Control-Allow-Origin"] = req.headers.origin;
+        // headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";
+        headers["Access-Control-Allow-Credentials"] = true;
+        headers["Access-Control-Max-Age"] = '3600'; //one hour
+        headers["Access-Control-Allow-Headers"] = `Content-Type, Content-Length, Access-Control-Allow-Origin, User-Agent, ${signatureHeaderName}`;
+        res.set(headers);
+        res.status(200);
+        res.end();
+    }
+})
+
 /*
 * if no previous handler response to the event it means that the url doesn't exit
 *
@@ -90,6 +111,7 @@ server.init(self);
 
 self.addEventListener('activate', function (event) {
     console.log("Activating service worker", event);
+    require("./utils/Sandbox");
     try {
         clients.claim();
     } catch (err) {

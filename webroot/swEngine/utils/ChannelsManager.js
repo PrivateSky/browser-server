@@ -56,14 +56,24 @@ function createChannel(channelName, callback) {
     callback(undefined, TOKEN_PLACEHOLDER);
 }
 
+const plugs = {};
 function sendMessage(channelName, message, callback) {
 
+    let header;
     try{
-        SwarmPacker.unpack(message.buffer);
+        const SwarmPacker = require("swarmutils").SwarmPacker;
+        header = SwarmPacker.getHeader(message);
     }catch(error){
         let e = new Error("SwarmPacker could not deserialize message");
         e.code = 400;
         callback(e);
+    }
+
+    if(typeof plugs[header.swarmTarget] === "undefined"){
+        //we need to do this in order to ensure that we have a handler for every fake/real channel that we create
+        let PC = require("./OuterServiceWorkerPC");
+        plugs[header.swarmTarget] =  new PC();
+        $$.swarmEngine.plug(header.swarmTarget, plugs[header.swarmTarget]);
     }
 
     let queue = _getQueue(channelName);
@@ -76,6 +86,7 @@ function sendMessage(channelName, message, callback) {
     if (!dispatched) {
         if (queue.length < maxQueueSize) {
             queue.push(message);
+            return callback(undefined);
 
         } else {
             //queue is full
@@ -85,17 +96,13 @@ function sendMessage(channelName, message, callback) {
         }
 
     }
+    callback(undefined);
 
 }
 
 function receiveMessage(channelName, callback) {
-    if (!queues[channelName]) {
-        let e = new Error("Channel does not exits");
-        e.code = 403;
-        return callback(e);
-    }
-
-    let queue = queues[channelName];
+    console.log(`Trying to receive message from channel "${channelName}"`);
+    let queue = _getQueue(channelName);
     let message = queue.pop();
 
     if (!message) {

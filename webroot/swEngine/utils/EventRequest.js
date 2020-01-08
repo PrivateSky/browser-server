@@ -44,9 +44,16 @@ function EventRequest(event) {
     let requestHeaders = {};
 
     for (let [header, value] of event.request.headers.entries()) {
+        /**
+         * Content-Length header is set to request when it is intercepted by service worker
+         */
+        if(header.toUpperCase() === "X-CONTENT-LENGTH"){
+            header = "Content-Length";
+        }
         requestHeaders[header] = value;
     }
 
+    this.headers = requestHeaders;
 
     /**
      * Checks if the specified content types are acceptable, based on the request’s Accept HTTP header field.

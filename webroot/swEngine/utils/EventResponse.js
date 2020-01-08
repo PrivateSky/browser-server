@@ -85,22 +85,24 @@ function EventResponse(event) {
         return this;
     };
     this.send = body => {
-        let responseBody = body;
-        if (typeof body === "object") {
+        //TODO check if message should be stringified
+
+        /*if (typeof body === "object") {
             responseBody = JSON.stringify(body);
-        }
-        event.sendResponse(responseBody, statusCode);
+        }*/
+
+        let arrayBuffer = new Blob([body], {
+            type: "application/octet-stream"
+        });
+
+        event.sendResponse(arrayBuffer, statusCode);
     };
     /**
      * TODO
      * wip
      **/
     this.write = stream => {
-        let responseBody = body;
-        if (typeof body === "object") {
-            responseBody = JSON.stringify(stream);
-        }
-        event.sendResponse(responseBody, statusCode);
+       console.error("Not implemented");
     };
     this.end = () => {
         event.sendResponse("", statusCode);
