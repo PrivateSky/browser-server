@@ -1,4 +1,4 @@
-const InnerServiceWorkerPC = require("./InnerServiceWorkerPC.js");
+const ServiceWorkerPC = require("./ServiceWorkerPC.js");
 const se = require("swarm-engine");
 
 se.initialise("*");
@@ -16,7 +16,7 @@ $$.swarms.describe("echo", {
 *  InnerServiceWorkerPowerCord in functia de sendSwarm verifica SwarmTargetul din header
 *  si daca este de tip URL trebuie sa puna in canalul extrax din swarmTarget
 * */
-let pc = new InnerServiceWorkerPC();
+let pc = new ServiceWorkerPC();
 
 
 $$.swarmEngine.plug("*", pc);

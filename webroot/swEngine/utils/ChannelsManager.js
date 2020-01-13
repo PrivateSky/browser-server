@@ -71,7 +71,7 @@ function sendMessage(channelName, message, callback) {
 
     if(typeof plugs[header.swarmTarget] === "undefined"){
         //we need to do this in order to ensure that we have a handler for every fake/real channel that we create
-        let PC = require("./OuterServiceWorkerPC");
+        let PC = require("./ServiceWorkerPC");
         plugs[header.swarmTarget] =  new PC();
         $$.swarmEngine.plug(header.swarmTarget, plugs[header.swarmTarget]);
     }
