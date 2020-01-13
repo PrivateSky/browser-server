@@ -1,6 +1,6 @@
-const Middleware = require("./utils/Middleware").Middleware;
-const ChannelsManager = require("./utils/ChannelsManager").getChannelsManager();
-const UtilFunctions = require("./utils/utilFunctions").UtilFunctions;
+const Middleware = require("./lib/Middleware").Middleware;
+const ChannelsManager = require("./lib/ChannelsManager").getChannelsManager();
+const UtilFunctions = require("./lib/utilFunctions").UtilFunctions;
 
 // create a global ref
 let server = new Middleware();
@@ -44,7 +44,6 @@ function sendMessageHandler (req, res) {
                 res.end();
             });
         }
-
     })
 }
 
@@ -111,7 +110,7 @@ server.init(self);
 
 self.addEventListener('activate', function (event) {
     console.log("Activating service worker", event);
-    require("./utils/Sandbox");
+    require("./lib/Sandbox");
     try {
         clients.claim();
     } catch (err) {
