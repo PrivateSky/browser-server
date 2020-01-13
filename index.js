@@ -1,9 +1,6 @@
-const Middleware = require("./lib/Middleware").Middleware;
+const server = require("./lib/Middleware").getMiddleware();
 const ChannelsManager = require("./lib/ChannelsManager").getChannelsManager();
-const UtilFunctions = require("./lib/utilFunctions").UtilFunctions;
-
-// create a global ref
-let server = new Middleware();
+const UtilFunctions = require("./lib/utilFunctions");
 
 function createChannelHandler (req, res) {
     ChannelsManager.createChannel(req.params.channelName, function (err) {
