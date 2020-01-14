@@ -99,6 +99,8 @@ server.use(function(req,res, next){
 *
 **/
 server.use(function (req, res, next) {
+    let requestedDomain = new URL(req.originalUrl).host;
+    server.requestedHosts.delete(requestedDomain);
     res.status(404);
     res.end();
 });
