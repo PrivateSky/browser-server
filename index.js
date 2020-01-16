@@ -118,3 +118,7 @@ self.addEventListener('activate', function (event) {
 });
 
 
+module.exports.powerCords = {
+    IframePowerCord:require("./lib/power-cords/IframePowerCord"),
+    ParentPowerCord:require("./lib/power-cords/ParentPowerCord")
+};
