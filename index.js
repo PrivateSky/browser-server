@@ -117,8 +117,8 @@ self.addEventListener('activate', function (event) {
     }
 });
 
-
-module.exports.powerCords = {
-    IframePowerCord:require("./lib/power-cords/IframePowerCord"),
-    ParentPowerCord:require("./lib/power-cords/ParentPowerCord")
-};
+self.addEventListener('message', function(event) {
+    if(event.target instanceof ServiceWorkerGlobalScope){
+        event.ports[0].postMessage({'test': 'This is my response.'});
+    }
+});
