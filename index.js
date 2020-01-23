@@ -119,6 +119,25 @@ self.addEventListener('activate', function (event) {
 
 self.addEventListener('message', function(event) {
     if(event.target instanceof ServiceWorkerGlobalScope){
-        event.ports[0].postMessage({'test': 'This is my response.'});
+        if(event.data.action ==="activate"){
+            event.ports[0].postMessage({status: 'empty'});
+        }
+
+        if(event.data.seed){
+            console.log("DONE1");
+            let swPskAdmin = require("./lib/ServiceWorkerPskAdmin").getServiceWorkerPskAdmin();
+            swPskAdmin.getConstitutionFilesFromBar(event.data.seed, (err, constitutionBundles) =>{
+                if(!err){
+                    console.log("DONE3");
+                    constitutionBundles.forEach(bundle => eval(bundle.toString()));
+                    console.log("DONE2");
+                    event.ports[0].postMessage({status: constitutionBundles[0].toString()});
+                }
+                else{
+                    console.log(err);
+                }
+            });
+
+        }
     }
 });
