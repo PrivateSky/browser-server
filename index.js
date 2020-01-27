@@ -125,8 +125,8 @@ self.addEventListener('message', function(event) {
 
         if(event.data.seed){
             console.log("DONE1");
-            let swPskAdmin = require("./lib/ServiceWorkerPskAdmin").getServiceWorkerPskAdmin();
-            swPskAdmin.getConstitutionFilesFromBar(event.data.seed, (err, constitutionBundles) =>{
+            let swPskDomain = require("./lib/BrowserPskDomain").getBrowserPskDomain();
+            swPskDomain.getConstitutionFilesFromBar(event.data.seed, (err, constitutionBundles) =>{
                 if(!err){
                     console.log("DONE3");
                     constitutionBundles.forEach(bundle => eval(bundle.toString()));
