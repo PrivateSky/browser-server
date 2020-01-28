@@ -1,4 +1,4 @@
-const server = require("./lib/Middleware").getMiddleware();
+const server = require("ssapp-middleware").getMiddleware();
 const ChannelsManager = require("./lib/ChannelsManager").getChannelsManager();
 const UtilFunctions = require("./lib/utilFunctions");
 

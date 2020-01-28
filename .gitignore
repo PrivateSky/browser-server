@@ -1,3 +1,4 @@
 /node_modules
 /webroot/sw-browserified.js
 /.idea
+/tests/tmp
