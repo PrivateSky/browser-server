@@ -106,38 +106,4 @@ server.use(function (req, res, next) {
 });
 
 server.init(self);
-
-self.addEventListener('activate', function (event) {
-    console.log("Activating service worker", event);
-    require("./lib/Sandbox");
-    try {
-        clients.claim();
-    } catch (err) {
-        console.log(err);
-    }
-});
-
-self.addEventListener('message', function(event) {
-    if(event.target instanceof ServiceWorkerGlobalScope){
-        if(event.data.action ==="activate"){
-            event.ports[0].postMessage({status: 'empty'});
-        }
-
-        if(event.data.seed){
-            console.log("DONE1");
-            let swPskDomain = require("./lib/BrowserPskDomain").getBrowserPskDomain();
-            swPskDomain.getConstitutionFilesFromBar(event.data.seed, (err, constitutionBundles) =>{
-                if(!err){
-                    console.log("DONE3");
-                    constitutionBundles.forEach(bundle => eval(bundle.toString()));
-                    console.log("DONE2");
-                    event.ports[0].postMessage({status: constitutionBundles[0].toString()});
-                }
-                else{
-                    console.log(err);
-                }
-            });
-
-        }
-    }
-});
+require("./lib/Sandbox");
